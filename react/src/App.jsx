@@ -1,28 +1,21 @@
-// src/App.js
-import React, { useState } from 'react';
-import Header from './Header';
-import ExpenseList from './ExpenseList';
-import AddExpenseForm from './AddExpenseForm';
-import TotalExpense from './TotalExpense';
+import React, { useState } from "react";
+import { Route, Routes } from "react-router-dom";
+import { NavBar } from "./NavBar";
+import { HomePage } from "./HomePage";
+import SignUp from "./Signup";
+import Login from "./Login";
+import { Header } from "./Header";
 
 function App() {
-  const [expenses, setExpenses] = useState([]);
-
-  const addExpense = (newExpense) => {
-    setExpenses([...expenses, newExpense]);
-  };
-
-  const deleteExpense = (id) => {
-    setExpenses(expenses.filter((expense) => expense.id !== id));
-  };
-
   return (
-    <div className="App">
-      <Header />
-      <AddExpenseForm addExpense={addExpense} />
-      <ExpenseList expenses={expenses} deleteExpense={deleteExpense} />
-      <TotalExpense expenses={expenses} />
-    </div>
+    <Routes>
+      <Route element={<NavBar />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/cashtracker" element={<Header />} />
+      </Route>
+    </Routes>
   );
 }
 
