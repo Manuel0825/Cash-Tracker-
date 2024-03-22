@@ -92,9 +92,9 @@ export default function Login() {
             disabled={isLoading}
             fullWidth
             style={{ marginTop: '1rem' }}
-          >
-            {isLoading ? "Logging in..." : "Login with Google"}
-          </Button>
+            >
+      Login with Google
+    </Button>
           <Typography variant="body2" style={{ marginTop: '1rem' }}>
             Don't have an account? <Link href="/signup">SignUp</Link>
           </Typography>
