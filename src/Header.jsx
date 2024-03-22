@@ -1,10 +1,10 @@
-// Import necessary components and modules
 import React, { useState, useEffect } from "react";
 import { collection, addDoc, getDocs, deleteDoc, doc, query, where } from "firebase/firestore";
+import { storage } from './firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, auth } from "./firebase";
 import { Typography, TextField, Button, AppBar, Tabs, Tab, Box, Container, Grid } from "@mui/material";
 import { styled } from '@mui/system';
-import UploadImage from "./UploadImage";
 
 // Styled components
 const TransactionList = styled('ul')({
@@ -32,7 +32,7 @@ export const Header = () => {
   const [user, setUser] = useState(null);
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
-  const [savings, setSavings] = useState(""); // State for savings amount
+  const [savings, setSavings] = useState("");
   const [file, setFile] = useState(null); // Updated state to store image URL
   const [incomingTransactions, setIncomingTransactions] = useState([]);
   const [spentTransactions, setSpentTransactions] = useState([]);
@@ -108,7 +108,7 @@ export const Header = () => {
   };
 
   const getTotalAmount = () => {
-    const incomingTotal = incomingTransactions.reduce((total, transaction) => total + transaction.amount, 0).toFixed (2);
+    const incomingTotal = incomingTransactions.reduce((total, transaction) => total + transaction.amount, 0).toFixed(2);
     const spentTotal = spentTransactions.reduce((total, transaction) => total - transaction.amount, 0).toFixed(2);
     return incomingTotal - spentTotal;
   };
@@ -120,32 +120,35 @@ export const Header = () => {
       description,
       amount: parseFloat(amount),
       file: file,
-      savings: parseFloat(savings), // Add savings amount to the new transaction
+      savings: parseFloat(savings),
     };
 
     addTransaction(newTransaction);
     setDescription("");
     setAmount("");
-    setSavings(""); // Clear the savings amount input field
-    setFile(null); // Clear the image URL after adding the transaction
+    setSavings("");
+    setFile(null);
   };
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
 
-  // Function to handle the uploaded image URL from UploadImage component
-  const handleUploadImage = (imageUrl) => {
-    setFile(imageUrl);
+  const handleUploadImage = async (image) => {
+    if (image) {
+      const storageRef = ref(storage, `images/${image.name}`);
+      await uploadBytes(storageRef, image);
+      const imageUrl = await getDownloadURL(storageRef);
+      setFile(imageUrl);
+    }
   };
-
   return (
     <>
       <AppBar position="static">
         <Container>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             CashTracker
-          </Typography>
+   </Typography>
         </Container>
       </AppBar>
       {user ? (
@@ -184,7 +187,10 @@ export const Header = () => {
                 />
               </Grid>
               <Grid item xs={12} md={2}>
-                <UploadImage onUpload={handleUploadImage} /> {/* Pass the handleUploadImage function */}
+                <div>
+                  <input type="file" onChange={(e) => handleUploadImage(e.target.files[0])} />
+                  {file && <img src={file} alt="Uploaded" style={{ width: '100px' }} />}
+                </div>
               </Grid>
               <Grid item xs={12}>
                 <Button type="submit" variant="contained" color="primary">
@@ -254,5 +260,4 @@ export const Header = () => {
   );
 };
 
-
-
+export default Header;

@@ -23,7 +23,7 @@ const UploadImage = ({ onUpload }) => {
   return (
     <div>
       <input type="file" onChange={handleChange} />
-      <button onClick={handleUpload}>Upload Image</button>
+      <button onClick={handleUpload}>ADD</button>
       {image && <img src={URL.createObjectURL(image)} alt="Selected Image" style={{ width: '100px' }} />}
     </div>
   );

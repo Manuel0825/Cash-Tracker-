@@ -5,7 +5,7 @@ import { HomePage } from "./HomePage";
 import SignUp from "./Signup";
 import Login from "./Login";
 import { Header } from "./Header";
-import UploadImage from "./UploadImage";
+
 import { ProfilePage } from "./ProfilePage";
 
 function App() {
@@ -16,7 +16,7 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
         <Route path="/cashtracker" element={<Header />} />
-        <Route path="/upload" element={<UploadImage />} />
+        
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
     </Routes>
