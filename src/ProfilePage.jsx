@@ -23,7 +23,7 @@ export const ProfilePage = () => {
       <h1>Profile Page</h1>
       {user ? (
         <div>
-          <p>Welcome, {user.displayName}</p>
+          <p>Welcome, {user.email}</p>
           <button onClick={() => auth.signOut()}>Sign Out</button>
         </div>
       ) : (
