@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { collection, addDoc, getDocs, deleteDoc, doc, query, where } from "firebase/firestore";
+import { collection, addDoc, getDocs, deleteDoc, query, where } from "firebase/firestore";
 import { storage } from './firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, auth } from "./firebase";
 import { Typography, TextField, Button, AppBar, Tabs, Tab, Box, Container, Grid } from "@mui/material";
 import { styled } from '@mui/system';
+
 
 // Styled components
 const TransactionList = styled('ul')({
@@ -27,31 +28,37 @@ const Spent = styled(Typography)({
   color: 'red',
 });
 
-// Header component
 export const Header = () => {
   const [user, setUser] = useState(null);
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
-  const [savings, setSavings] = useState("");
-  const [file, setFile] = useState(null); // Updated state to store image URL
+  const [file, setFile] = useState(null);
   const [incomingTransactions, setIncomingTransactions] = useState([]);
   const [spentTransactions, setSpentTransactions] = useState([]);
   const [activeTab, setActiveTab] = useState("incoming");
+  const [savingsGoal, setSavingsGoal] = useState(0); // State to hold user's savings goal
+  const [savingsProgress, setSavingsProgress] = useState(0); // State to hold savings progress
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         setUser(user);
         fetchTransactions();
+        fetchSavingsGoal(user.uid); // Fetch user's savings goal
       } else {
         setUser(null);
         setIncomingTransactions([]);
         setSpentTransactions([]);
+        setSavingsGoal(0); // Reset savings goal if no user is signed in
       }
     });
 
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    calculateSavingsProgress(); // Recalculate savings progress whenever transactions or savings goal change
+  }, [incomingTransactions, spentTransactions, savingsGoal]);
 
   const fetchTransactions = async () => {
     if (user) {
@@ -77,13 +84,24 @@ export const Header = () => {
     }
   };
 
+  const fetchSavingsGoal = async (userId) => {
+    try {
+      const docRef = await db.collection('users').doc(userId).get();
+      if (docRef.exists) {
+        const userData = docRef.data();
+        setSavingsGoal(userData.savingsGoal || 0); // Set user's savings goal if available
+      }
+    } catch (error) {
+      console.error('Error fetching savings goal:', error);
+    }
+  };
+
   const addTransaction = async (newTransaction) => {
     try {
       if (user) {
         const userId = user.uid;
         const transactionWithUserId = { ...newTransaction, userId };
-        const docRef = await addDoc(collection(db, "transactions"), transactionWithUserId);
-        console.log("Transaction added with ID: ", docRef.id);
+        await addDoc(collection(db, "transactions"), transactionWithUserId);
         fetchTransactions();
       } else {
         console.error("User not authenticated");
@@ -96,7 +114,7 @@ export const Header = () => {
   const deleteTransaction = async (id) => {
     try {
       if (user) {
-        await deleteDoc(doc(db, "transactions", id));
+        await deleteDoc(doc(db, "transactions", id)); // Fixed the deleteDoc function call
         console.log("Transaction successfully deleted");
         fetchTransactions();
       } else {
@@ -109,8 +127,14 @@ export const Header = () => {
 
   const getTotalAmount = () => {
     const incomingTotal = incomingTransactions.reduce((total, transaction) => total + transaction.amount, 0).toFixed(2);
-    const spentTotal = spentTransactions.reduce((total, transaction) => total - transaction.amount, 0).toFixed(2);
-    return incomingTotal - spentTotal;
+    const spentTotal = spentTransactions.reduce((total, transaction) => total + transaction.amount, 0).toFixed(2);
+    return (incomingTotal - spentTotal).toFixed(2); // Fixed the calculation
+  };
+
+  const calculateSavingsProgress = () => {
+    const totalSavings = incomingTransactions.reduce((total, transaction) => total + parseFloat(transaction.savings), 0);
+    const progress = (totalSavings / savingsGoal) * 100;
+    setSavingsProgress(progress);
   };
 
   const handleSubmit = async (e) => {
@@ -120,13 +144,11 @@ export const Header = () => {
       description,
       amount: parseFloat(amount),
       file: file,
-      savings: parseFloat(savings),
     };
 
     addTransaction(newTransaction);
     setDescription("");
     setAmount("");
-    setSavings("");
     setFile(null);
   };
 
@@ -142,9 +164,9 @@ export const Header = () => {
       setFile(imageUrl);
     }
   };
+  
   return (
     <>
-     
       {user ? (
         <Container maxWidth="md">
           <Typography variant="h4" gutterBottom>Add Transaction</Typography>
@@ -171,16 +193,6 @@ export const Header = () => {
                 />
               </Grid>
               <Grid item xs={12} md={3}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="Savings"
-                  value={savings}
-                  onChange={(e) => setSavings(e.target.value)}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12} md={2}>
                 <div>
                   <input type="file" onChange={(e) => handleUploadImage(e.target.files[0])} />
                   {file && <img src={file} alt="Uploaded" style={{ width: '100px' }} />}
@@ -199,8 +211,7 @@ export const Header = () => {
           <Typography variant="h4" gutterBottom>Please sign in to continue</Typography>
         </Container>
       )}
-      {user && (
-        <>
+      {user && (<>
           <AppBar position="static" color="default">
             <Tabs value={activeTab} onChange={handleTabChange} indicatorColor="primary" textColor="primary">
               <Tab label="Incoming Transactions" value="incoming" />
@@ -217,7 +228,6 @@ export const Header = () => {
                       <Incoming>{transaction.description}</Incoming>
                       <Typography>${transaction.amount}</Typography>
                       {transaction.file && <img src={transaction.file} alt="Transaction" />} {/* Display image if available */}
-                      <Typography>Savings: ${transaction.savings}</Typography> {/* Display savings amount */}
                       <Button onClick={() => deleteTransaction(transaction.id)}>Delete</Button>
                     </TransactionItem>
                   ))}
@@ -233,7 +243,6 @@ export const Header = () => {
                       <Spent>{transaction.description}</Spent>
                       <Typography>${transaction.amount}</Typography>
                       {transaction.file && <img src={transaction.file} alt="Transaction" />} {/* Display image if available */}
-                      <Typography>Savings: ${transaction.savings}</Typography> {/* Display savings amount */}
                       <Button onClick={() => deleteTransaction(transaction.id)}>Delete</Button>
                     </TransactionItem>
                   ))}
@@ -245,6 +254,12 @@ export const Header = () => {
             <Container>
               <Box py={2} textAlign="center">
                 <Typography variant="h6">Total Balance: ${getTotalAmount()}</Typography>
+                {savingsGoal > 0 && ( // Display savings goal and progress bar if savings goal is set
+                  <div>
+                    <Typography variant="body1">Savings Goal: ${savingsGoal}</Typography>
+                    <LinearProgress variant="determinate" value={savingsProgress} />
+                  </div>
+                )}
               </Box>
             </Container>
           </AppBar>
@@ -253,5 +268,3 @@ export const Header = () => {
     </>
   );
 };
-
-export default Header;

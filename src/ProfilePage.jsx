@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { auth } from './firebase'; // Import your Firebase auth object
+import { auth } from './firebase'; // Import Firebase auth object
 
 export const ProfilePage = () => {
   const [user, setUser] = useState(null);
@@ -23,7 +23,7 @@ export const ProfilePage = () => {
       <h1>Profile Page</h1>
       {user ? (
         <div>
-          <p>Email: {user.email}</p>
+          <p>Welcome, {user.displayName}</p>
           <button onClick={() => auth.signOut()}>Sign Out</button>
         </div>
       ) : (
@@ -32,4 +32,3 @@ export const ProfilePage = () => {
     </div>
   );
 };
-
