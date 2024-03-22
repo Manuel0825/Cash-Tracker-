@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { Button } from '@mui/material';
 
-
 export const Header = () => {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
-
   const [expenses, setExpenses] = useState([]);
 
   const addExpense = (newExpense) => {
@@ -15,7 +13,6 @@ export const Header = () => {
   const deleteExpense = (id) => {
     setExpenses(expenses.filter((expense) => expense.id !== id));
   };
-
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -54,22 +51,34 @@ export const Header = () => {
         <button type="submit">Add Expense</button>
       </form>
 
-        <h2>Expense List</h2>
-        <ul>
-          {expenses.map((expense) => (
-            <li key={expense.id}>
-              <span>{expense.description}</span>
-              <span>${expense.amount}</span>
-              <Button onClick={() => handleDelete(expense.id)} variant="contained">
-                Delete
-              </Button>
-            </li>
-          ))}
-        </ul>
-      
+      <h2>Expense List</h2>
+      <ul>
+        {expenses.map((expense) => (
+          <li key={expense.id}>
+            <span>{expense.description}</span>
+            <span>${expense.amount}</span>
+            <Button onClick={() => handleDelete(expense.id)} variant="contained">
+              Delete
+            </Button>
+          </li>
+        ))}
+      </ul>
+
+      <TotalExpense expenses={expenses} />
     </>
   );
 };
+
+function TotalExpense({ expenses }) {
+  const total = expenses.reduce((acc, expense) => acc + expense.amount, 0);
+
+  return (
+    <div>
+      <h2>Total Expense: ${total}</h2>
+    </div>
+  );
+}
+
 
 
 
