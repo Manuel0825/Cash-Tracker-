@@ -144,13 +144,7 @@ export const Header = () => {
   };
   return (
     <>
-      <AppBar position="static">
-        <Container>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            CashTracker
-   </Typography>
-        </Container>
-      </AppBar>
+     
       {user ? (
         <Container maxWidth="md">
           <Typography variant="h4" gutterBottom>Add Transaction</Typography>

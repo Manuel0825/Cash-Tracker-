@@ -11,7 +11,7 @@ const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <HashRouter>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
         <CssBaseline />
@@ -19,6 +19,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         </AuthProvider>
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
-    </BrowserRouter>
+    </HashRouter>
   </React.StrictMode>
 );
