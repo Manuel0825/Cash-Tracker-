@@ -1,9 +1,9 @@
-import { Box } from "@mui/material";
+import { Box, Button, TextField, Typography, Paper, Grid, Link } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "./Firebase";
+import { auth } from "./firebase";
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -14,14 +14,14 @@ export default function SignUp() {
   } = useForm();
 
   // Define the mutation for signing up
-  const { mutate: signupMutation } = useMutation({
+  const { mutate: signupMutation, isLoading } = useMutation({
     mutationKey: "signup",
     mutationFn: async ({ email, password }) => {
       return await createUserWithEmailAndPassword(auth, email, password);
     },
     onSuccess: () =>  {
-        navigate("/Login");
-  },
+      navigate("/login");
+    },
   });
 
   const onSubmit = async (data) => {
@@ -29,38 +29,49 @@ export default function SignUp() {
   };
 
   return (
-    <div className="container mx-auto flex justify-center items-center flex-col min-h-[100vh] gap-8">
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <label htmlFor="email">
-          Email
-          <input
-            className="input"
-            type="email"
-            name="email"
-            autoComplete="username"
-            {...register("email", { required: true })}
-          />
-          {errors.email && <span>This field is required</span>}
-        </label>
-        <label htmlFor="password">
-          Password
-          <input
-            className="input"
-            type="password"
-            name="password"
-            autoComplete="new-password"
-            {...register("password", { required: true })}
-          />
-          {errors.password && <span>This field is required</span>}
-        </label>
-        <button
-          className="button"
-          type="submit"
-          disabled={signupMutation.isLoading}
-        >
-          Sign up
-        </button>
-      </form>
-    </div>
+    <Grid container justifyContent="center" alignItems="center" style={{ minHeight: '100vh' }}>
+      <Grid item xs={12} sm={8} md={6} lg={4}>
+        <Paper elevation={3} style={{ padding: '2rem', textAlign: 'center' }}>
+          <Typography variant="h5" gutterBottom>
+            Sign Up
+          </Typography>
+          <form onSubmit={handleSubmit(onSubmit)} style={{ marginTop: '1rem' }}>
+            <TextField
+              label="Email"
+              type="email"
+              variant="outlined"
+              fullWidth
+              autoComplete="username"
+              {...register("email", { required: true })}
+              error={!!errors.email}
+              helperText={errors.email && "This field is required"}
+            />
+            <TextField
+              label="Password"
+              type="password"
+              variant="outlined"
+              fullWidth
+              autoComplete="new-password"
+              style={{ marginTop: '1rem' }}
+              {...register("password", { required: true })}
+              error={!!errors.password}
+              helperText={errors.password && "This field is required"}
+            />
+            <Button
+              variant="contained"
+              type="submit"
+              disabled={isLoading}
+              fullWidth
+              style={{ marginTop: '1rem' }}
+            >
+              {isLoading ? "Signing Up..." : "Sign Up"}
+            </Button>
+          </form>
+          <Typography variant="body2" style={{ marginTop: '1rem' }}>
+            Already have an account? <Link href="/login">Login here</Link>
+          </Typography>
+        </Paper>
+      </Grid>
+    </Grid>
   );
 }

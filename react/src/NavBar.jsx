@@ -12,18 +12,30 @@ import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
+import { auth } from './firebase'; // Import your Firebase auth object
 
-const pages = ["Products", "Pricing", "Blog"];
-const settings = ["Profile", "Account", "Dashboard", "Logout"];
+const pages = [
+  { name: "Home", link: "/" },
+  { name: "Login", link: "/Login" },
+  { name: "SignUp", link: "/SignUp" },
+];
+
+const settings = [
+  { name: "Profile", link: "/profile" },
+  { name: "Dashboard", link: "/cashtracker" },
+  
+];
 
 export const NavBar = () => {
+  const navigate = useNavigate();
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
   };
+
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
   };
@@ -36,6 +48,16 @@ export const NavBar = () => {
     setAnchorElUser(null);
   };
 
+  const handlePageNavigation = (link) => {
+    navigate(link);
+    handleCloseNavMenu();
+  };
+
+  const handleSettingsNavigation = (link) => {
+    navigate(link);
+    handleCloseUserMenu();
+  };
+
   return (
     <>
       <AppBar position="static">
@@ -46,7 +68,7 @@ export const NavBar = () => {
               variant="h6"
               noWrap
               component="a"
-              href="#app-bar-with-responsive-menu"
+              href="cashtracker"
               sx={{
                 mr: 2,
                 display: { xs: "none", md: "flex" },
@@ -57,7 +79,7 @@ export const NavBar = () => {
                 textDecoration: "none",
               }}
             >
-              LOGO
+              €CashTracker$
             </Typography>
 
             <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
@@ -90,8 +112,8 @@ export const NavBar = () => {
                 }}
               >
                 {pages.map((page) => (
-                  <MenuItem key={page} onClick={handleCloseNavMenu}>
-                    <Typography textAlign="center">{page}</Typography>
+                  <MenuItem key={page.name} onClick={() => handlePageNavigation(page.link)}>
+                    <Typography align="center">{page.name}</Typography>
                   </MenuItem>
                 ))}
               </Menu>
@@ -118,11 +140,11 @@ export const NavBar = () => {
             <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
               {pages.map((page) => (
                 <Button
-                  key={page}
-                  onClick={handleCloseNavMenu}
-                  sx={{ my: 2, color: "white", display: "block" }}
+                  key={page.name}
+                  onClick={() => handlePageNavigation(page.link)}
+                  sx={{ my: 2, color: "black", display: "block" }}
                 >
-                  {page}
+                  {page.name}
                 </Button>
               ))}
             </Box>
@@ -130,7 +152,7 @@ export const NavBar = () => {
             <Box sx={{ flexGrow: 0 }}>
               <Tooltip title="Open settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                  <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                  <Avatar alt="User Profile" src={auth.currentUser ? auth.currentUser.photoURL : ''} />
                 </IconButton>
               </Tooltip>
               <Menu
@@ -150,8 +172,8 @@ export const NavBar = () => {
                 onClose={handleCloseUserMenu}
               >
                 {settings.map((setting) => (
-                  <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                    <Typography textAlign="center">{setting}</Typography>
+                  <MenuItem key={setting.name} onClick={() => handleSettingsNavigation(setting.link)}>
+                    <Typography align="center">{setting.name}</Typography>
                   </MenuItem>
                 ))}
               </Menu>

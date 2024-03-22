@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
@@ -7,8 +6,8 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
 } from "firebase/auth";
-import { auth } from "./Firebase"
-import { Button } from "@mui/material";
+import { auth } from "./firebase";
+import { Button, TextField, Typography, Paper, Grid, Link } from "@mui/material";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -29,7 +28,7 @@ export default function Login() {
       navigate("/");
     },
     onError: (error) => {
-      console.error("Error al loguear el usuario:", error);
+      console.error("Error logging in:", error);
     },
   });
 
@@ -44,42 +43,63 @@ export default function Login() {
       await signInWithPopup(auth, provider);
       navigate("/");
     } catch (error) {
-      console.error("Error al loguear con Google:", error);
+      console.error("Error logging in with Google:", error);
     }
   };
 
   return (
-    <div className="container mx-auto flex justify-center items-center flex-col min-h-[100vh] gap-8">
-      <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
-        <label htmlFor="email">
-          Email
-          <input
-            type="email"
-            autoComplete="username"
-            className="input"
-            {...register("email", { required: true })}
-          />
-          {errors.email && <span>This field is required</span>}
-        </label>
-        <label htmlFor="password">
-          Password
-          <input
-            type="password"
-            className="input"
-            autoComplete="current-password"
-            {...register("password", { required: true })}
-          />
-          {errors.password && <span>This field is required</span>}
-        </label>
-        <input
-          className="button"
-          type="submit"
-          disabled={isLoading}
-        />
-      </form>
-      <Button className="button" onClick={googleLogin} disabled={isLoading}>
-        Login with Google
-      </Button>
-    </div>
+    <Grid container justifyContent="center" alignItems="center" style={{ minHeight: '100vh' }}>
+      <Grid item xs={12} sm={8} md={6} lg={4}>
+        <Paper elevation={3} style={{ padding: '2rem', textAlign: 'center' }}>
+          <Typography variant="h5" gutterBottom>
+            Bank Login
+          </Typography>
+          <form onSubmit={handleSubmit(onSubmit)} style={{ marginTop: '1rem' }}>
+            <TextField
+              label="Email"
+              type="email"
+              variant="outlined"
+              fullWidth
+              autoComplete="username"
+              {...register("email", { required: true })}
+              error={!!errors.email}
+              helperText={errors.email && "This field is required"}
+            />
+            <TextField
+              label="Password"
+              type="password"
+              variant="outlined"
+              fullWidth
+              autoComplete="current-password"
+              style={{ marginTop: '1rem' }}
+              {...register("password", { required: true })}
+              error={!!errors.password}
+              helperText={errors.password && "This field is required"}
+            />
+            <Button
+              variant="contained"
+              type="submit"
+              disabled={isLoading}
+              fullWidth
+              style={{ marginTop: '1rem' }}
+            >
+              {isLoading ? "Logging in..." : "Login"}
+            </Button>
+          </form>
+          <Button
+            variant="contained"
+            onClick={googleLogin}
+            disabled={isLoading}
+            fullWidth
+            style={{ marginTop: '1rem' }}
+          >
+            {isLoading ? "Logging in..." : "Login with Google"}
+          </Button>
+          <Typography variant="body2" style={{ marginTop: '1rem' }}>
+            Don't have an account? <Link href="/signup">SignUp</Link>
+          </Typography>
+        </Paper>
+      </Grid>
+    </Grid>
   );
 }
